@@ -53,7 +53,7 @@ def Close():
                 if file.iloc[machine_list.index(machine),3] == '0' or file.iloc[machine_list.index(machine),3] == 0 :
                     file.iloc[machine_list.index(machine),3] = dt.now().strftime("%I:%M:%S,%p")
                     file.to_csv(path, index=False)
-                    file.iloc[machine_list.index(machine),-1] = str(f"{end_time[0]}:{end_time[1]}:{end_time[2]}")
+                    file.iloc[machine_list.index(machine),-1] = str(f"{abs(end_time[0])}:{abs(end_time[1])}:{abs(end_time[2])}")
                     file.to_csv(path, index=False)
                     messagebox.showinfo("Information","Saved succesfully")
                     break
