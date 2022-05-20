@@ -3,9 +3,9 @@ from tkinter import *
 from tkinter import messagebox
 from datetime import datetime as dt
 import pandas as pd
-from datetime import date
+import datetime
 import os
-today=date.today()
+today=datetime.date.today()
 window=Tk()
 window.title('Data entry')
 menu= StringVar()
