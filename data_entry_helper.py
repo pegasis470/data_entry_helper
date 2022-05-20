@@ -19,7 +19,7 @@ def Open():
     global time_list
     global count
     start_time = dt.now()
-    time_list.append((start_time.hour,start_time.minute,start_time.second))
+    time_list.append(start_time.timestamp())
     file= open(path,"a")
     if count != 0:
         file = pd.read_csv(path)
@@ -47,13 +47,12 @@ def Close():
             machine = menu.get()
             file = pd.read_csv(path)
             machine_list=list(file['Machine name'].values)
-            end=(dt.now().hour,dt.now().minute,dt.now().second)
-            end_time=tuple(map(lambda i,j : j-i ,time_list[machine_list.index(machine)],end))
+            end=dt.now().timestamp()
             try:
                 if file.iloc[machine_list.index(machine),3] == '0' or file.iloc[machine_list.index(machine),3] == 0 :
                     file.iloc[machine_list.index(machine),3] = dt.now().strftime("%I:%M:%S,%p")
                     file.to_csv(path, index=False)
-                    file.iloc[machine_list.index(machine),-1] = str(f"{abs(end_time[0])}:{abs(end_time[1])}:{abs(end_time[2])}")
+                    file.iloc[machine_list.index(machine),-1] = str(datetime.timedelta(seconds=abs(end-time_list[machine_list.index(machine)])))
                     file.to_csv(path, index=False)
                     messagebox.showinfo("Information","Saved succesfully")
                     break
