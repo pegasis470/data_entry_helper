@@ -24,11 +24,16 @@ def Open():
     if count != 0:
         file = pd.read_csv(path)
         machine_list=list(file['Machine name'].values)
-        if menu.get() in machine_list:
-            messagebox.showerror("ERROR","machine already running")
-            return False
+        try:
+            if menu.get() in machine_list and file.iloc[machine_list.index(menu.get()),3] == '0' or file.iloc[machine_list.index(menu.get()),3] == 0 :
+                messagebox.showerror("ERROR","machine already running")
+                return False
+            else:
+                pass
+        except ValueError:
+            pass
     else:
-        pass 
+        pass
     lst=[menu.get(),Username.get(),dt.now().strftime('%I:%M:%S,%p'),0,0]
     main_lst=[]
     main_lst.append(lst)
@@ -42,6 +47,7 @@ def Open():
     messagebox.showinfo("Information","Saved succesfully")
     file.close()
     lst=[]
+
 def Close():
     while True:
             machine = menu.get()
