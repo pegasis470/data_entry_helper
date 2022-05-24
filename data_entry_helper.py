@@ -15,6 +15,7 @@ count = 0
 name=str(f"{today}_{dt.now().strftime('%p')}_data_entry.csv")
 path = os.path.join(os.getcwd(),name)
 time_list=[]
+repeat=0
 def Open():
     global time_list
     global count
@@ -28,9 +29,14 @@ def Open():
             if menu.get() in machine_list and file.iloc[machine_list.index(menu.get()),3] == '0' or file.iloc[machine_list.index(menu.get()),3] == 0 :
                 messagebox.showerror("ERROR","machine already running")
                 return False
-            else:
+            elif menu.get() in machine_list and file.iloc[machine_list.index(menu.get()),3] != '0' or file.iloc[machine_list.index(menu.get()),3] != 0:
+                global repeat
+                repeat = 1
                 pass
+
         except ValueError:
+            pass
+    else:
             pass
     else:
         pass
@@ -49,25 +55,28 @@ def Open():
     lst=[]
 
 def Close():
-    while True:
-            machine = menu.get()
-            file = pd.read_csv(path)
-            machine_list=list(file['Machine name'].values)
-            end=dt.now().timestamp()
-            try:
-                if file.iloc[machine_list.index(machine),3] == '0' or file.iloc[machine_list.index(machine),3] == 0 :
+        global repeat
+        machine = menu.get()
+        file = pd.read_csv(path)
+        machine_list=list(file['Machine name'].values)
+        end_time=dt.now().timestamp()
+        try:
+                if repeat == 1:
+                    index_pos = len(machine_list) - machine_list[::-1].index(machine) - 1
+                    file.iloc[index_pos,3] = dt.now().strftime("%I:%M:%S,%p")
+                    file.iloc[index_pos,-1] = str(datetime.timedelta(seconds=abs(end_time-time_list[index_pos])))
+                    file.to_csv(path, index=False)
+                elif repeat!=0 and file.iloc[machine_list.index(machine),3] == '0' or file.iloc[machine_list.index(machine),3] == 0 :
                     file.iloc[machine_list.index(machine),3] = dt.now().strftime("%I:%M:%S,%p")
                     file.to_csv(path, index=False)
-                    file.iloc[machine_list.index(machine),-1] = str(datetime.timedelta(seconds=abs(end-time_list[machine_list.index(machine)])))
+                    file.iloc[machine_list.index(machine),-1] = str(datetime.timedelta(seconds=abs(end_time-time_list[machine_list.index(machine)])))
                     file.to_csv(path, index=False)
                     messagebox.showinfo("Information","Saved succesfully")
-                    break
                 else:
-                    messagebox.showinfo("Information","Machine already closed")
-                    break
-            except ValueError:
+                    messagebox.showerror("Information","Machine already closed")
+        except ValueError:
                 messagebox.showerror("ERROR","machine is not open yet")
-                break
+
 label1=Label(window,text="Username: ",padx=20,pady=10)
 label2=Label(window,text="Machine name",padx=20,pady=10)
 Username=Entry(window,width=30,borderwidth=5)
