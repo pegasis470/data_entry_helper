@@ -66,6 +66,7 @@ def Close():
                     file.iloc[index_pos,3] = dt.now().strftime("%I:%M:%S,%p")
                     file.iloc[index_pos,-1] = str(datetime.timedelta(seconds=abs(end_time-time_list[index_pos])))
                     file.to_csv(path, index=False)
+                    repeat=0
                 
                     messagebox.showinfo("Information","Saved succesfully")
                 elif repeat!=1 and file.iloc[machine_list.index(machine),3] == '0' or file.iloc[machine_list.index(machine),3] == 0 :
@@ -80,11 +81,16 @@ def Close():
                 messagebox.showerror("ERROR","machine is not open yet")
 def file_backup():
     while True:
-        file=pd.read_csv(path)
-        current_hour,current_min,current_sec=dt.now().hour,dt.now().minute,dt.now().secondk
+        global path
+        global time_list
+        try:
+            file=pd.read_csv(path)
+        except FileNotFoundError:
+            file90=open(path,'w')
+        current_hour,current_min=dt.now().strftime("%I"),dt.now().strftime("%M")
         temp_time_lst=time_list
-        if current_hour == 12 or current_hour == 0 and (current_min,current_sec) == (0,0):
-            new_name=str(f"{today}__data_entry.csv") #{dt.now().strftime('%p')}
+        if current_hour == '12' and current_min == '00':
+            new_name=str(f"{today}_{dt.now().strftime('%p')}_data_entry.csv") #{dt.now().strftime('%p')}
             new_path = os.path.join(os.getcwd(),new_name)
             new_file=file.loc[file['Close time']== '0']
             try:
@@ -130,5 +136,8 @@ Username.grid(row=0,column=1)
 Machine.grid(row=1,column=1)
 add.grid(row=3,column=0)
 close.grid(row=3,column=2)
+# file_backup()
 window.after(3600000,file_backup)
+#window.after(120000,file_backup)
 window.mainloop()
+
