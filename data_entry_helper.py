@@ -20,6 +20,7 @@ def Open():
     global time_list
     global count
     global temp_time_lst
+    global path
     start_time = dt.now()
     time_list.append(start_time.timestamp())
     file= open(path,"a")
@@ -56,6 +57,7 @@ def Open():
             
 def Close():
         global repeat
+        global path
         machine = menu.get()
         file = pd.read_csv(path)
         machine_list=list(file['Machine name'].values)
@@ -80,7 +82,7 @@ def Close():
         except ValueError:
                 messagebox.showerror("ERROR","machine is not open yet")
 def file_backup():
-    while True:
+        print("called")
         global path
         global time_list
         try:
@@ -90,6 +92,7 @@ def file_backup():
         current_hour,current_min=dt.now().strftime("%I"),dt.now().strftime("%M")
         temp_time_lst=time_list
         if current_hour == '12' and current_min == '00':
+            print("satisfied")
             new_name=str(f"{today}_{dt.now().strftime('%p')}_data_entry.csv") #{dt.now().strftime('%p')}
             new_path = os.path.join(os.getcwd(),new_name)
             new_file=file.loc[file['Close time']== '0']
@@ -121,9 +124,8 @@ def file_backup():
             file.to_csv(path,index=False)
             time_list=new_time_lst
             path=new_path
-            break
         else:
-            break
+            window.after(60000,file_backup)
 label1=Label(window,text="Username: ",padx=20,pady=10)
 label2=Label(window,text="Machine name",padx=20,pady=10)
 Username=Entry(window,width=30,borderwidth=5)
@@ -136,8 +138,6 @@ Username.grid(row=0,column=1)
 Machine.grid(row=1,column=1)
 add.grid(row=3,column=0)
 close.grid(row=3,column=2)
-# file_backup()
-window.after(3600000,file_backup)
-#window.after(120000,file_backup)
+file_backup()
 window.mainloop()
 
