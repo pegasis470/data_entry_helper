@@ -24,41 +24,28 @@ def Open():
     start_time = dt.now()
     time_list.append(start_time.timestamp())
     try:
-        file= open(path,"a")
-    except PermissionError:
-         messagebox.showerror("ERROR","the exel file is open in other program close it and try agian")
-         return False
-    if count != 0:
-        file = pd.read_csv(path)
-        machine_list=list(file['Machine name'].values)
-        try:
-            if menu.get() in machine_list and file.iloc[machine_list.index(menu.get()),3] == '0' or file.iloc[machine_list.index(menu.get()),3] == 0 :
-                messagebox.showerror("ERROR","machine already running")
-                return False
-            elif menu.get() in machine_list and file.iloc[machine_list.index(menu.get()),3] != '0' or file.iloc[machine_list.index(menu.get()),3] != 0:
-                global repeat 
-                repeat = 1
-                pass
-            
-        except ValueError:
-            pass
-    else:
-        pass 
-    lst=[menu.get(),Username.get(),dt.now().strftime('%I:%M:%S,%p'),0,0]
-    Username.delete(0,END)
-    file= open(path,"a")
-    Writer=writer(file)
-    if count == 0:
+        file=pd.read_csv(path)
+    except pd.errors.EmptyDataError :
+        open_file=open(path,'a')
+        Writer=writer(open_file)
         Writer.writerow(["Machine name","username","Open time",'Close time','Up time'])
-        count = count+1
-    Writer.writerow(lst)
-    messagebox.showinfo("Information","Saved succesfully")
-    temp_time_lst=time_list
-    file.close()
+        open_file.close()
     file=pd.read_csv(path)
+    machine_list=list(file["Machine name"].values)
+    try:
+        if menu.get() in machine_list and file.iloc[machine_list.index(menu.get()),3] == '0' or file.iloc[machine_list.index(menu.get()),3] == 0 :
+            messagebox.showerror("Information","Machine Already Running")
+            return False
+        elif menu.get() in machine_list and file.iloc[machine_list.index(menu.get()),3] != '0' or file.iloc[machine_list.index(menu.get()),3] != 0:
+            global repeat
+            repeat = 1
+    except ValueError:
+        pass
+    lst=[menu.get(),Username.get(),dt.now().strftime('%I:%M:%S,%p'),0,0]
+    file.loc[len(file)]=lst
     file.to_csv(path,index=False)
+    messagebox.showinfo("Information","Saved succesfully")
     lst=[]
-            
 def Close():
         global repeat
         machine = menu.get()
