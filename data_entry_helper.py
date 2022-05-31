@@ -41,10 +41,11 @@ def Open():
             repeat = 1
     except ValueError:
         pass
-    lst=[menu.get(),Username.get(),dt.now().strftime('%I:%M:%S,%p'),0,0]
+    lst=[menu.get(),Username.get(),dt.now().strftime('%I:%M:%S,%p'),'0','0']
     file.loc[len(file)]=lst
     file.to_csv(path,index=False)
     messagebox.showinfo("Information","Saved succesfully")
+    Username.delete(0,END)
     lst=[]
 def Close():
         global repeat
@@ -95,7 +96,7 @@ def file_backup():
             print("satisfied")
             new_name=str(f"{today}_{dt.now().strftime('%p')}_data_entry.csv") #{dt.now().strftime('%p')}
             new_path = os.path.join(os.getcwd(),new_name)
-            new_file=file.loc[file['Close time']== '0']
+            new_file=file.loc[(file['Close time']== '0')| (file['Close time']== 0)]
             try:
                 new_file['Open time']= dt.now().strftime('%I:%M:%S,%p')
             except OSerror:
@@ -116,9 +117,14 @@ def file_backup():
                 diff_lst.append(temp_time_lst[i])
             for i in diff_lst:
                 final_uptime_lst.append(datetime.timedelta(seconds=dt.now().timestamp()-i))
-            for i in list(file[file["Close time"]=='0'].index.values):
+            for i in list(file[file["Close time"]== '0'].index.values):
                 file.at[i,'Close time']=dt.now().strftime('%I:%M:%S %p')
-            for i in list(file[file["Up time"]=='0'].index.values):
+            for i in list(file[file["Up time"]== '0'].index.values):
+                for j in final_uptime_lst:
+                    file.at[i,'Up time'] = j
+            for i in list(file[file["Close time"]== 0].index.values):
+                file.at[i,'Close time']=dt.now().strftime('%I:%M:%S %p')
+            for i in list(file[file["Up time"]== 0].index.values):
                 for j in final_uptime_lst:
                     file.at[i,'Up time'] = j
             file.to_csv(path,index=False)
