@@ -16,14 +16,18 @@ name=str(f"{today}_{dt.now().strftime('%p')}_data_entry.csv")
 path = os.path.join(os.getcwd(),name)
 time_list=[]
 repeat=0
+main_lst=[]
 def Open():
     global time_list
     global count
     global temp_time_lst
-    global path
     start_time = dt.now()
     time_list.append(start_time.timestamp())
-    file= open(path,"a")
+    try:
+        file= open(path,"a")
+    except PermissionError:
+         messagebox.showerror("ERROR","the exel file is open in other program close it and try agian")
+         return False
     if count != 0:
         file = pd.read_csv(path)
         machine_list=list(file['Machine name'].values)
@@ -41,23 +45,22 @@ def Open():
     else:
         pass 
     lst=[menu.get(),Username.get(),dt.now().strftime('%I:%M:%S,%p'),0,0]
-    main_lst=[]
-    main_lst.append(lst)
     Username.delete(0,END)
     file= open(path,"a")
     Writer=writer(file)
     if count == 0:
         Writer.writerow(["Machine name","username","Open time",'Close time','Up time'])
         count = count+1
-    Writer.writerows(main_lst)
+    Writer.writerow(lst)
     messagebox.showinfo("Information","Saved succesfully")
     temp_time_lst=time_list
     file.close()
+    file=pd.read_csv(path)
+    file.to_csv(path,index=False)
     lst=[]
             
 def Close():
         global repeat
-        global path
         machine = menu.get()
         file = pd.read_csv(path)
         machine_list=list(file['Machine name'].values)
@@ -67,15 +70,25 @@ def Close():
                     index_pos = len(machine_list) - machine_list[::-1].index(machine) - 1
                     file.iloc[index_pos,3] = dt.now().strftime("%I:%M:%S,%p")
                     file.iloc[index_pos,-1] = str(datetime.timedelta(seconds=abs(end_time-time_list[index_pos])))
-                    file.to_csv(path, index=False)
+                    try:
+                        file.to_csv(path, index=False)
+                    except PermissionError:
+                        messagebox.showerror("ERROR","the exel file is open in other program close it and try agian")
                     repeat=0
-                
                     messagebox.showinfo("Information","Saved succesfully")
                 elif repeat!=1 and file.iloc[machine_list.index(machine),3] == '0' or file.iloc[machine_list.index(machine),3] == 0 :
                     file.iloc[machine_list.index(machine),3] = dt.now().strftime("%I:%M:%S,%p")
-                    file.to_csv(path, index=False)
+                    try:
+                        file.to_csv(path, index=False)
+                    except PermissionError:
+                        messagebox.showerror("ERROR","the exel file is open in other program close it and try agian")
+                        return False
                     file.iloc[machine_list.index(machine),-1] = str(datetime.timedelta(seconds=abs(end_time-time_list[machine_list.index(machine)])))
-                    file.to_csv(path, index=False)
+                    try:
+                        file.to_csv(path, index=False)
+                    except PermissionError:
+                        messagebox.showerror("ERROR","the exel file is open in other program close it and try agian")
+                        return False
                     messagebox.showinfo("Information","Saved succesfully")
                 else:
                     messagebox.showerror("Information","Machine already closed")
@@ -124,6 +137,7 @@ def file_backup():
             file.to_csv(path,index=False)
             time_list=new_time_lst
             path=new_path
+            window.after(60000,file_backup)
         else:
             window.after(60000,file_backup)
 label1=Label(window,text="Username: ",padx=20,pady=10)
