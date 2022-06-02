@@ -1,14 +1,14 @@
-import os 
-from datetime import datetime as dt
-import time
+import subprocess as sp
+import os
 import sys
+import datetime
 path=os.path.join(os.getcwd(),"main.exe")
+print("please wait we are configuring temp and system files main.exe will be launched soon ")
+print("please close this window after main is launched")
 while True:
-    current_min=dt.now().strftime("%M")
-    current_sec=dt.now().strftime("%S")
-    print(dt.now().strftime("%I:%M:%S,%p"))
-    time.sleep(1)
-    if current_min=="00" and current_sec=="00":
-        os.system(f"python {path}")
+    now=datetime.datetime.now().strftime("%S")
+    if now == "23":
+        os.system(path)
         break
+sys.exit()
 sys.exit(0)
