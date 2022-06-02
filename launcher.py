@@ -1,3 +1,6 @@
+# !/bin/python3
+# GNU General Public License v3.0-or-later
+# (c) pegasis470 (Sumant Dhere) <www.sumantdhere@gamil.com>
 import subprocess as sp
 import os
 import sys
