@@ -1,3 +1,6 @@
+# !/bin/python3
+# GNU General Public License v3.0-or-later
+# (c) pegasis470 (Sumant Dhere) <www.sumantdhere@gamil.com>
 from csv import *
 from tkinter import *
 from tkinter import messagebox
@@ -43,7 +46,11 @@ def Open():
         pass
     lst=[menu.get(),Username.get(),dt.now().strftime('%I:%M:%S,%p'),'0','0']
     file.loc[len(file)]=lst
-    file.to_csv(path,index=False)
+    try:
+        file.to_csv(path,index=False)
+    except PermissionError:
+        messagebox.showerror("ERROR","the exel file is open in other program close it and try agian")
+        return False
     messagebox.showinfo("Information","Saved succesfully")
     Username.delete(0,END)
     lst=[]
@@ -83,52 +90,50 @@ def Close():
         except ValueError:
                 messagebox.showerror("ERROR","machine is not open yet")
 def file_backup():
-        print("called")
         global path
         global time_list
         try:
             file=pd.read_csv(path)
         except FileNotFoundError:
             file90=open(path,'w')
+            file90.close()
         current_hour,current_min=dt.now().strftime("%I"),dt.now().strftime("%M")
-        temp_time_lst=time_list
+        temp_time_list=time_list
         if current_hour == '12' and current_min == '00':
-            print("satisfied")
-            new_name=str(f"{today}_{dt.now().strftime('%p')}_data_entry.csv") #{dt.now().strftime('%p')}
+            new_name=str(f"{datetime.date.today()}_{dt.now().strftime('%p')}_data_entry.csv") #{dt.now().strftime('%p')}
             new_path = os.path.join(os.getcwd(),new_name)
             new_file=file.loc[(file['Close time']== '0')| (file['Close time']== 0)]
-            try:
-                new_file['Open time']= dt.now().strftime('%I:%M:%S,%p')
-            except OSerror:
-                file69=open(new_path,'w')
+            new_file['Open time']= dt.now().strftime('%I:%M:%S,%p')
             new_file.to_csv(new_path, index=False)
+            new_time_list=[]
             new_machine_lst=list(new_file['Machine name'].values)
-            new_time_lst=[]
-            file2=pd.read_csv(new_path)
-            for i in range(len(new_file['Machine name'].values)):
-                new_time_lst.append(dt.now().timestamp())
-            time_list=new_time_lst
-            temp_lst=[]
-            for i in list(file2['Machine name'].values):
-                temp_lst.append(int(file[file['Machine name']==i].index.values))
-            diff_lst=[]
-            final_uptime_lst=[]
-            for i in temp_lst:
-                diff_lst.append(temp_time_lst[i])
-            for i in diff_lst:
-                final_uptime_lst.append(datetime.timedelta(seconds=dt.now().timestamp()-i))
-            for i in list(file[file["Close time"]== '0'].index.values):
-                file.at[i,'Close time']=dt.now().strftime('%I:%M:%S %p')
-            for i in list(file[file["Up time"]== '0'].index.values):
-                for j in final_uptime_lst:
-                    file.at[i,'Up time'] = j
-            for i in list(file[file["Close time"]== 0].index.values):
-                file.at[i,'Close time']=dt.now().strftime('%I:%M:%S %p')
-            for i in list(file[file["Up time"]== 0].index.values):
-                for j in final_uptime_lst:
-                    file.at[i,'Up time'] = j
+            try:
+                for i in list(new_file["Machine name"].values):
+                     file.at[int(file[(file["Machine name"]==i) & (file["Close time"]==0)].index.values),"Close time"]=dt.now().strftime("%I:%M:%S,%p")
+            except TypeError:
+                try:
+                    for i in list(new_file["Machine name"].values):
+                         file.at[int(file[(file["Machine name"]==i) & (file["Close time"]=='0')].index.values),"Close time"]=dt.now().strftime("%I:%M:%S,%p")
+                except TypeError:
+                    pass
             file.to_csv(path,index=False)
-            time_list=new_time_lst
+            for i in range(len(new_machine_lst)):
+                  new_time_list.append(dt.now().timestamp())
+            diff_list=[]
+            for i in temp_time_list:
+                  diff_list.append(datetime.timedelta(seconds=abs(dt.now().timestamp()-i)))
+            try:
+                for i in list(new_file["Machine name"].values):
+                     file.at[int(file[(file["Machine name"]==i) & (file["Up time"]==0)].index.values),"Up time"]=diff_list[int(file.loc[(file["Machine name"]==i) & (file["Up time"]==0)].index.values)]
+            except TypeError:
+                try:
+                    for i in list(new_file["Machine name"].values):
+                         file.at[int(file[(file["Machine name"]==i) & (file["Up time"]=='0')].index.values),"Up time"]=diff_list[int(file.loc[(file["Machine name"]==i) & (file["Up time"]=='0')].index.values)]
+                except TypeError:
+                    pass    
+            file.to_csv(path,index=False)
+
+            time_list=new_time_list
             path=new_path
             window.after(60000,file_backup)
         else:
@@ -147,4 +152,3 @@ add.grid(row=3,column=0)
 close.grid(row=3,column=2)
 file_backup()
 window.mainloop()
-
